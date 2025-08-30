@@ -10,7 +10,7 @@ type User = {
     email: string;
     organizationId: string;
     name?: string;
-    role?: string;
+    roleName?: string;
     // outros campos que podem vir do usuário
 };
 
@@ -109,16 +109,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!data?.token?.token || !data?.token?.user) {
                 throw new Error('Dados de autenticação inválidos');
             }
-            // Salvando o token e os dados do usuário
             await AsyncStorage.setItem('@ProtegoApp:token', data.token.token);
             await AsyncStorage.setItem('@ProtegoApp:user', JSON.stringify(data.token.user));
-            // Salva credenciais no SecureStore para reautenticação biométrica
             await SecureStore.setItemAsync('user_email', email);
             await SecureStore.setItemAsync('user_password', password);
             setUser(data.token.user);
             return true;
         } catch (error) {
-            console.error('Erro no login:', error);
             return false;
         } finally {
             setLoading(false);

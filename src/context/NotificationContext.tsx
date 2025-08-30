@@ -1,15 +1,27 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import { Platform } from 'react-native';
-import { getSocket } from '../utils/api';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import { Platform } from "react-native";
+import { api, getSocket } from "../utils/api";
+import { useAuth } from "./AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface NotificationData {
-  id: string;
-  title: string;
-  body: string;
-  data?: any;
-  receivedAt: Date;
+export interface NotificationData {
+  _id: string;
+  UserID: string;
+  UserName: string;
+  AccessType: string;
+  DateTime: Date;
+  ErrorCode: number;
+  ErrorDescription: string;
+  Similarity: number;
+  Status: string;
+  organizationId: string;
+  Method: number;
+  EventCode: string;
+  ImagePaths: [string];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface NotificationContextType {
@@ -26,64 +38,79 @@ const NotificationContext = createContext<NotificationContextType>({
   clearNotifications: () => {},
 });
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const { user } = useAuth();
+  const [token, setToken] = useState<string | undefined>();
 
+  // Busca notificações iniciais via HTTP
   useEffect(() => {
-    async function registerForPushNotificationsAsync() {
-      let token;
-      if (Device.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
+    console.log("user", user);
+    async function fetchNotifications() {
+      // if (!user?.organizationId) {
+      //   console.log('organizationId not found');
+      //   return;
+      // }
+      try {
+        // const response = await api.get(`/v1/emergency/all/emergencies?organizationId=${user.organizationId}`);
+        const response = await api.get(
+          `/v1/actions/all?organizationId=68321cbf3e629d41257b7e3b`
+        );
+        console.log("response22", response.data.data);
+        const data = response.data.data.data;
+        if (Array.isArray(data)) {
+          setNotifications(
+            data.map((n: any) => ({
+              id: n._id,
+              title: n.UserName || "-",
+              body: n.ErrorDescription || n.SuccessDescription || "-",
+              data: n,
+              receivedAt: new Date(n.DateTime || n.createdAt), // data real do evento
+            }))
+          );
         }
-        if (finalStatus !== 'granted') {
-          return;
-        }
-        token = (await Notifications.getExpoPushTokenAsync()).data;
-        setExpoPushToken(token);
+      } catch (err) {
+        console.log("fetch error", err);
       }
     }
-    registerForPushNotificationsAsync();
+    fetchNotifications();
+  }, [user, user?.organizationId]);
 
-    // Listener para notificações recebidas em tempo real (push)
-    const subscription = Notifications.addNotificationReceivedListener((notification) => {
-      setNotifications((prev) => [
-        {
-          id: notification.request.identifier,
-          title: notification.request.content.title || '',
-          body: notification.request.content.body || '',
-          data: notification.request.content.data,
-          receivedAt: new Date(),
-        },
-        ...prev,
-      ]);
-    });
+  // Atualiza token sempre que o usuário muda
+  useEffect(() => {
+    async function getToken() {
+      const t = await AsyncStorage.getItem("@ProtegoApp:token");
+      setToken(t || undefined);
+    }
+    getToken();
+  }, [user]);
 
-    // WebSocket para notificações em tempo real
+  // WebSocket para notificações em tempo real
+  useEffect(() => {
+    if (!token) return;
     const socket = getSocket();
+    socket.io.opts.query = { token };
     socket.connect();
-    socket.on('notification', (data: any) => {
+    socket.on("notification", (data: any) => {
       setNotifications((prev) => [
         {
           id: data.id || String(Date.now()),
-          title: data.title || 'Nova notificação',
-          body: data.body || '',
-          data: data.data,
-          receivedAt: new Date(),
+          title: data.title || "Nova notificação",
+          body: data.body || "",
+          data: data,
+          receivedAt: new Date(data.receivedAt || Date.now()),
         },
         ...prev,
       ]);
     });
     return () => {
-      subscription.remove();
-      socket.off('notification');
+      socket.off("notification");
       socket.disconnect();
     };
-  }, []);
+  }, [token]);
 
   function addNotification(notification: NotificationData) {
     setNotifications((prev) => [notification, ...prev]);
@@ -94,7 +121,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }
 
   return (
-    <NotificationContext.Provider value={{ expoPushToken, notifications, addNotification, clearNotifications }}>
+    <NotificationContext.Provider
+      value={{
+        expoPushToken,
+        notifications,
+        addNotification,
+        clearNotifications,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

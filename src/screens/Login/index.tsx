@@ -7,33 +7,31 @@ import * as Animatable from 'react-native-animatable';
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from '../../routes';
 import { styles } from './styles';
-import { useAuth } from '../../context/AuthContext';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import { useAuth } from '../../context/AuthContext';
 
 export function Login() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const { login, loading } = useAuth();
+    const { login, biometricReAuth, loading } = useAuth();
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [loadingBiometric, setLoadingBiometric] = useState(false);
 
-    // Tenta login biométrico ao abrir a tela
     React.useEffect(() => {
         (async () => {
+            setLoadingBiometric(true);
             const hasHardware = await LocalAuthentication.hasHardwareAsync();
             const isEnrolled = await LocalAuthentication.isEnrolledAsync();
             if (hasHardware && isEnrolled) {
                 const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Autentique-se para entrar' });
                 if (result.success) {
-                    const storedEmail = await SecureStore.getItemAsync('user_email');
-                    const storedPassword = await SecureStore.getItemAsync('user_password');
-                    if (storedEmail && storedPassword) {
-                        setLoadingBiometric(true);
-                        await login(storedEmail, storedPassword);
-                        setLoadingBiometric(false);
+                    const success = await biometricReAuth();
+                    if (success) {
+                        navigation.navigate('App');
                     }
                 }
             }
+            setLoadingBiometric(false);
         })();
     }, []);
 
@@ -42,7 +40,6 @@ export function Login() {
             Alert.alert('Erro', 'Por favor, preencha todos os campos');
             return;
         }
-
         const success = await login(credentials.email, credentials.password);
         if (success) {
             navigation.navigate('App');
@@ -83,7 +80,7 @@ export function Login() {
                             style={styles.input}
                         />
 
-                        <Button onPress={handleLogin} title={loading ? "Carregando..." : "Entrar"} disabled={loading} />
+                        <Button onPress={handleLogin} title={loading || loadingBiometric ? "Carregando..." : "Entrar"} disabled={loading || loadingBiometric} />
                     </View>
                 </Animatable.View>
             </View>

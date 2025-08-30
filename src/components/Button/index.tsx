@@ -31,7 +31,7 @@ export function Button({ title, label, onPress, style, disabled, textColor = '#f
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: '#FF0000',
+        backgroundColor: '#111e31',
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',

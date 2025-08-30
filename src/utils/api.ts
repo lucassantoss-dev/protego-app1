@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { io, Socket } from 'socket.io-client';
 
 export const api = axios.create({
-    baseURL: 'http://192.168.100.37:3200',
+    baseURL: 'http://192.168.100.29:3200',
 });
 
 // Interceptor para adicionar o token em todas as requisições
@@ -31,7 +31,7 @@ let socket: Socket | null = null;
 
 export function getSocket() {
   if (!socket) {
-    socket = io('http://192.168.100.37:3200', {
+    socket = io('http://192.168.100.29:3200', {
       transports: ['websocket'],
       autoConnect: false,
     });

@@ -10,10 +10,10 @@ export const CardsList: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  if (user?.role === 'admin') {
+  if (user?.roleName === 'admin') {
     return (
       <>
-        <Animatable.View animation="fadeInUp" delay={300} style={{ padding: 15 }}>
+        <Animatable.View animation="fadeInUp" delay={300} style={{ padding: 12 }}>
           <Card
             icon="bell"
             title="Notificações"
@@ -21,7 +21,7 @@ export const CardsList: React.FC = () => {
             onPress={() => navigation.navigate('Notifications')}
           />
         </Animatable.View>
-        <Animatable.View animation="fadeInUp" delay={500} style={{ padding: 15 }}>
+        <Animatable.View animation="fadeInUp" delay={500} style={{ padding: 12 }}>
           <Card
             icon="user-check"
             title="Pessoas Reconhecidas"
@@ -29,7 +29,7 @@ export const CardsList: React.FC = () => {
             onPress={() => navigation.navigate('Profile')}
           />
         </Animatable.View>
-        <Animatable.View animation="fadeInUp" delay={700} style={{ padding: 15 }}>
+        <Animatable.View animation="fadeInUp" delay={700} style={{ padding: 12 }}>
           <Card
             icon="alert-circle"
             title="Alertas de Segurança"

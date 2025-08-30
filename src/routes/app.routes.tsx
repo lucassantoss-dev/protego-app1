@@ -83,7 +83,7 @@ function MainTabs() {
                     ),
                 }}
             />
-            <Tab.Screen
+            {/* <Tab.Screen
                 name="Map"
                 component={MapScreen}
                 options={{
@@ -92,7 +92,7 @@ function MainTabs() {
                         <Ionicons name="map" color={color} size={size} />
                     ),
                 }}
-            />
+            /> */}
             <Tab.Screen
                 name="Notifications"
                 component={NotificationStack}

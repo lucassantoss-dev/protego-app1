@@ -6,7 +6,7 @@ import { useGreeting } from '../../hooks/useGreeting';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from './styles';
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ small?: boolean }> = ({ small }) => {
   const { greetingText, iconName, colorIcon } = useGreeting();
   const { user } = useAuth();
 
