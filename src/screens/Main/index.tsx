@@ -20,7 +20,6 @@ import { styles } from "./styles";
 export default function Main() {
   const { loading } = useAuth();
   const { notifications } = useNotification();
-  console.log("notifications123", notifications);
   const isOnline = true;
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 400;
@@ -83,24 +82,24 @@ export default function Main() {
                       ? [...notifications]
                           .sort((a, b) => {
                             const dateA = new Date(
-                              a.data?.DateTime || a.DateTime || 0
+                              a.data?.DateTime || 0
                             ).getTime();
                             const dateB = new Date(
-                              b.data?.DateTime || b.DateTime || 0
+                              b.data?.DateTime || 0
                             ).getTime();
                             return dateB - dateA;
                           })
                           .slice(0, 1) // Só a mais recente
                       : []
                   }
-                  keyExtractor={(item) => item.data?._id || item._id}
+                  keyExtractor={(item) => item.data?._id}
                   renderItem={({ item }) => {
-                    const status = item.data?.Status || item.Status || "-";
+                    const status = item.data?.Status || "-";
                     const isAttended = status.toLowerCase() === "success";
                     const statusColor = isAttended ? "#4caf50" : "#f44336";
                     const nome =
-                      item.data?.UserName || item.UserName || "Sem nome";
-                    const dt = item.data?.DateTime || item.DateTime;
+                      item.data?.UserName || "Sem nome";
+                    const dt = item.data?.DateTime;
                     const dataFormatada = dt
                       ? new Date(dt).toLocaleDateString("pt-BR")
                       : "--/--/----";
@@ -158,7 +157,7 @@ export default function Main() {
                               {nome}
                             </Text>
                             <Text style={{ color: "#333", fontSize: 12 }}>
-                              {item.data?.AccessType || item.AccessType}
+                              {item.data?.AccessType}
                             </Text>
                           </View>
                         </View>

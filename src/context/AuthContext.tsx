@@ -4,6 +4,8 @@ import { api } from '../utils/api';
 import * as Location from 'expo-location';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 
 type User = {
     id: string;
@@ -12,6 +14,11 @@ type User = {
     name?: string;
     roleName?: string;
     // outros campos que podem vir do usuário
+};
+
+export type PushInfo = {
+    pushUserId?: string;
+    pushToken?: string;
 };
 
 type AuthResponse = {
@@ -38,6 +45,8 @@ type AuthContextData = {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => Promise<void>;
     biometricReAuth: () => Promise<boolean>;
+    pushInfo: PushInfo;
+    setPushInfo: (info: PushInfo) => void;
 };
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -46,11 +55,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState<LocationType | null>(null);
+    const [pushInfo, setPushInfo] = useState<PushInfo>({});
 
     useEffect(() => {
         loadStoredUser();
         updateLocation();
     }, []);
+
+    useEffect(() => {
+        const registerForPushNotificationsAsync = async () => {
+            let token;
+            if (Device.isDevice) {
+                const { status: existingStatus } = await Notifications.getPermissionsAsync();
+                let finalStatus = existingStatus;
+                if (existingStatus !== 'granted') {
+                    const { status } = await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
+                }
+                if (finalStatus !== 'granted') {
+                    console.log('Permissão para notificações não concedida!');
+                    return;
+                }
+                token = (await Notifications.getExpoPushTokenAsync()).data;
+                console.log('Push Notification Token:', token);
+                setPushInfo({ pushToken: token });
+            } else {
+                console.log('Precisa usar em um dispositivo físico para notificações push');
+            }
+        };
+        registerForPushNotificationsAsync();
+    }, []);
+
+    useEffect(() => {
+        // Envia pushInfo para o backend após login e quando pushInfo muda
+        if (user && pushInfo.pushToken) {
+            console.log('Enviando pushInfo para o backend:', pushInfo);
+            api.patch('/v1/user/push-info', {
+                userId: user.id,
+                pushToken: pushInfo.pushToken,
+            });
+        }
+    }, [user, pushInfo]);
 
     async function loadStoredUser() {
         try {
@@ -136,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, location, updateLocation, login, logout, biometricReAuth }}>
+        <AuthContext.Provider value={{ user, loading, location, updateLocation, login, logout, biometricReAuth, pushInfo, setPushInfo }}>
             {children}
         </AuthContext.Provider>
     );

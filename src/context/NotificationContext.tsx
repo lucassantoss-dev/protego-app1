@@ -7,21 +7,24 @@ import { useAuth } from "./AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface NotificationData {
-  _id: string;
-  UserID: string;
-  UserName: string;
-  AccessType: string;
-  DateTime: Date;
-  ErrorCode: number;
-  ErrorDescription: string;
-  Similarity: number;
-  Status: string;
-  organizationId: string;
-  Method: number;
-  EventCode: string;
-  ImagePaths: [string];
-  createdAt: Date;
-  updatedAt: Date;
+  data: {
+    _id: string;
+    UserID: string;
+    UserName: string;
+    AccessType: string;
+    DateTime: Date;
+    ErrorCode: number;
+    ErrorDescription: string;
+    Similarity: number;
+    Status: string;
+    organizationId: string;
+    Method: number;
+    EventCode: string;
+    ImagePaths: [string];
+    createdAt: Date;
+    updatedAt: Date;
+    agentId?: string;
+  }
 }
 
 interface NotificationContextType {
@@ -59,7 +62,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await api.get(
           `/v1/actions/all?organizationId=68321cbf3e629d41257b7e3b`
         );
-        console.log("response22", response.data.data);
         const data = response.data.data.data;
         if (Array.isArray(data)) {
           setNotifications(
@@ -87,6 +89,59 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     getToken();
   }, [user]);
+
+  // Obtém o token do Expo Push Notification
+  useEffect(() => {
+    async function registerForPushNotificationsAsync() {
+      let token;
+      if (Device.isDevice) {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== 'granted') {
+          console.log('Permissão para notificações não concedida!');
+          return;
+        }
+        token = (await Notifications.getExpoPushTokenAsync()).data;
+        setExpoPushToken(token);
+      } else {
+        console.log('Precisa usar em um dispositivo físico para notificações push');
+      }
+    }
+    registerForPushNotificationsAsync();
+  }, []);
+
+  // Redireciona para a tela de notificações ao clicar na notificação
+  useEffect(() => {
+    console.log('aq??')
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log('response', response);
+      // Use a navegação global para redirecionar
+      const navRef = (globalThis as any).navigationRef;
+      if (navRef && navRef.current) {
+        navRef.current.navigate('Notifications');
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // Redireciona para tela de detalhes ao clicar na notificação
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      // Recupera os dados enviados na notificação
+      const notificationData = response.notification.request.content.data;
+      // Use a navegação global para redirecionar para a tela de detalhes
+      const navRef = (globalThis as any).navigationRef;
+      if (navRef && navRef.current) {
+        console.log('navegando para detalhes', notificationData);
+        navRef.current.navigate('Notifications', { notificationData });
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   // WebSocket para notificações em tempo real
   useEffect(() => {

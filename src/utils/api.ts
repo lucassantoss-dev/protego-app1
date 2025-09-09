@@ -1,9 +1,10 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { io, Socket } from 'socket.io-client';
+import type { NotificationData } from '../context/NotificationContext';
 
 export const api = axios.create({
-    baseURL: 'http://192.168.100.29:3200',
+    baseURL: 'http://52.43.20.216:3200',
 });
 
 // Interceptor para adicionar o token em todas as requisições
@@ -27,11 +28,16 @@ api.interceptors.response.use(
     }
 );
 
+// Função utilitária para obter o Access Token do AsyncStorage
+export async function getAccessToken() {
+  return await AsyncStorage.getItem('@ProtegoApp:token');
+}
+
 let socket: Socket | null = null;
 
 export function getSocket() {
   if (!socket) {
-    socket = io('http://192.168.100.29:3200', {
+    socket = io('http://52.43.20.216:3200', {
       transports: ['websocket'],
       autoConnect: false,
     });
