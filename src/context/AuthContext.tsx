@@ -13,6 +13,7 @@ type User = {
     organizationId: string;
     name?: string;
     roleName?: string;
+    photo?: string;
     // outros campos que podem vir do usuário
 };
 
@@ -134,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!hasHardware || !isEnrolled) return false;
         // Solicita autenticação biométrica
         const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: 'Autentique-se para continuar',
+            promptMessage: 'Use sua biometria para entrar',
+            cancelLabel: 'Cancelar',
+            fallbackLabel: 'Usar senha',
         });
         if (!result.success) return false;
         // Recupera credenciais seguras

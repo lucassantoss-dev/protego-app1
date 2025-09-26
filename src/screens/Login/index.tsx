@@ -23,12 +23,9 @@ export function Login() {
             const hasHardware = await LocalAuthentication.hasHardwareAsync();
             const isEnrolled = await LocalAuthentication.isEnrolledAsync();
             if (hasHardware && isEnrolled) {
-                const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Autentique-se para entrar' });
-                if (result.success) {
-                    const success = await biometricReAuth();
-                    if (success) {
-                        navigation.navigate('App');
-                    }
+                const success = await biometricReAuth();
+                if (success) {
+                    navigation.navigate('App');
                 }
             }
             setLoadingBiometric(false);

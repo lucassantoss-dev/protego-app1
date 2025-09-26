@@ -116,30 +116,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Redireciona para a tela de notificações ao clicar na notificação
   useEffect(() => {
-    console.log('aq??')
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('response', response);
+      console.log('Notificação clicada:', response);
+      
+      // Recupera os dados enviados na notificação
+      const notificationData = response.notification.request.content.data;
+      
       // Use a navegação global para redirecionar
       const navRef = (globalThis as any).navigationRef;
       if (navRef && navRef.current) {
-        navRef.current.navigate('Notifications');
+        // Verifica se há dados específicos da tela para navegar
+        const targetScreen = notificationData?.screen || 'Notifications';
+        console.log('Navegando para:', targetScreen, 'com dados:', notificationData);
+        
+        navRef.current.navigate(targetScreen, { notificationData });
       }
     });
-    return () => subscription.remove();
-  }, []);
-
-  // Redireciona para tela de detalhes ao clicar na notificação
-  useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      // Recupera os dados enviados na notificação
-      const notificationData = response.notification.request.content.data;
-      // Use a navegação global para redirecionar para a tela de detalhes
-      const navRef = (globalThis as any).navigationRef;
-      if (navRef && navRef.current) {
-        console.log('navegando para detalhes', notificationData);
-        navRef.current.navigate('Notifications', { notificationData });
-      }
-    });
+    
     return () => subscription.remove();
   }, []);
 

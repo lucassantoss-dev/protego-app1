@@ -7,24 +7,45 @@ import { styles } from './styles';
 interface CardProps {
   icon: string;
   iconColor?: string;
+  gradientColor?: string;
   title: string;
   subtitle: string;
   onPress: () => void;
 }
 
-export const Card: React.FC<CardProps> = ({ icon, iconColor = '#111e31', title, subtitle, onPress }) => (
-  <View style={styles.card}>
+export const Card: React.FC<CardProps> = ({ 
+  icon, 
+  iconColor = '#6366f1', 
+  gradientColor = '#6366f1',
+  title, 
+  subtitle, 
+  onPress 
+}) => (
+  <TouchableOpacity 
+    activeOpacity={0.7} 
+    onPress={onPress}
+    style={styles.card}
+  >
+    {/* Gradient top bar */}
+    <View style={[styles.cardGradient, { backgroundColor: gradientColor }]} />
+    
     <View style={styles.cardContent}>
-      <View style={styles.iconContainer}>
-        <Feather name={icon as any} size={30} color={iconColor} />
+      <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
+        <Feather name={icon as any} size={24} color={iconColor} />
       </View>
-      <View style={{ backgroundColor: '#f5f5f5', flex: 1 }}>
-        <Text size={16} weight="600" color="#111e31">{title}</Text>
-        <Text size={15} weight="400" color="#111e31">{subtitle}</Text>
+      
+      <View style={styles.cardTextContent}>
+        <Text style={styles.cardTitle}>
+          {title}
+        </Text>
+        <Text style={styles.cardSubtitle}>
+          {subtitle}
+        </Text>
       </View>
-      <TouchableOpacity style={styles.rightIconContainer} onPress={onPress}>
-        <Feather name="arrow-right" size={18} color="#f5f5f5" style={{ transform: [{ rotate: '-45deg' }] }} />
-      </TouchableOpacity>
+      
+      <View style={styles.rightIconContainer}>
+        <Feather name="arrow-right" size={16} color="#9ca3af" />
+      </View>
     </View>
-  </View>
+  </TouchableOpacity>
 );

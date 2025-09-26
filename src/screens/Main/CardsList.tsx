@@ -12,53 +12,73 @@ export const CardsList: React.FC = () => {
 
   if (user?.roleName === 'admin') {
     return (
-      <>
-        <Animatable.View animation="fadeInUp" delay={300} style={{ padding: 12 }}>
+      <View style={{ marginBottom: 8 }}>
+        <Animatable.View animation="fadeInUp" delay={400}>
           <Card
             icon="bell"
+            iconColor="#ef4444"
+            gradientColor="#ef4444"
             title="Notificações"
-            subtitle="3 novas notificações"
+            subtitle="3 novas notificações de reconhecimento"
             onPress={() => navigation.navigate('Notifications')}
           />
         </Animatable.View>
-        <Animatable.View animation="fadeInUp" delay={500} style={{ padding: 12 }}>
+        <Animatable.View animation="fadeInUp" delay={500}>
           <Card
-            icon="user-check"
+            icon="users"
+            iconColor="#3b82f6"
+            gradientColor="#3b82f6"
             title="Pessoas Reconhecidas"
-            subtitle="5 pessoas identificadas hoje"
+            subtitle="5 identificações realizadas hoje"
             onPress={() => navigation.navigate('Profile')}
           />
         </Animatable.View>
-        <Animatable.View animation="fadeInUp" delay={700} style={{ padding: 12 }}>
+        <Animatable.View animation="fadeInUp" delay={600}>
           <Card
-            icon="alert-circle"
+            icon="shield-alert"
+            iconColor="#f59e0b"
+            gradientColor="#f59e0b"
             title="Alertas de Segurança"
-            subtitle="1 alerta crítico"
+            subtitle="1 alerta crítico pendente"
             onPress={() => navigation.navigate('Notifications')}
           />
         </Animatable.View>
-      </>
+        <Animatable.View animation="fadeInUp" delay={700}>
+          <Card
+            icon="map-pin"
+            iconColor="#10b981"
+            gradientColor="#10b981"
+            title="Localização de Eventos"
+            subtitle="Visualizar no mapa interativo"
+            onPress={() => navigation.navigate('Map')}
+          />
+        </Animatable.View>
+      </View>
     );
   }
 
   return (
-    <>
-      <Animatable.View animation="fadeInUp" delay={300} style={{ padding: 15 }}>
+    <View style={{ marginBottom: 8 }}>
+      <Animatable.View animation="fadeInUp" delay={400}>
         <Card
-          icon="alert-triangle"
+          icon="file-plus"
+          iconColor="#8b5cf6"
+          gradientColor="#8b5cf6"
           title="Minhas Ocorrências"
-          subtitle="Relate um incidente"
+          subtitle="Relatar novo incidente de segurança"
           onPress={() => navigation.navigate('Feed')}
         />
       </Animatable.View>
-      <Animatable.View animation="fadeInUp" delay={300} style={{ padding: 15 }}>
+      <Animatable.View animation="fadeInUp" delay={500}>
         <Card
           icon="bell"
+          iconColor="#ef4444"
+          gradientColor="#ef4444"
           title="Notificações"
           subtitle="3 novas notificações"
           onPress={() => navigation.navigate('Notifications')}
         />
       </Animatable.View>
-    </>
+    </View>
   );
 };
