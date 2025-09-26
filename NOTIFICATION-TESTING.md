@@ -1,6 +1,6 @@
 ## 🔔 Sistema de Teste de Notificações Protego
 
-### ✅ **O que foi implementado:**
+### ✅ **O que foi implementado:1**
 
 1. **Componente de Teste de Redirecionamento** - Simula notificações no Expo Go
 2. **Navegação Configurada** - Sistema de redirecionamento funcional
